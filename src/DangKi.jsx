@@ -78,7 +78,6 @@ export default function DangKi() {
       fillPhoneNumber &&
       fillCode
     ) {
-      console.log("call api");
       fetch(`/api/auth/register`, {
         method: "POST",
         headers: {
@@ -101,6 +100,7 @@ export default function DangKi() {
           if (res.status === 200) {
             res.json().then((data) => {
               console.log(data.value);
+              setResponseDangKi(data);
             });
           } else if (res.status === 409) {
             res.json().then((data) => {
@@ -131,7 +131,10 @@ export default function DangKi() {
               defaultValue={firstName}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:shadow-lg"
               placeholder="Họ"
-              onChange={(e) => setFirstName(e.target.value)}
+              onChange={(e) => {
+                setFirstName(e.target.value);
+                setFillFirstName(true);
+              }}
               required
             />
             {!fillFirstName && (
@@ -147,7 +150,10 @@ export default function DangKi() {
               defaultValue={lastName}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:shadow-lg"
               placeholder="Tên"
-              onChange={(e) => setLastName(e.target.value)}
+              onChange={(e) => {
+                setLastName(e.target.value);
+                setFillLastName(true);
+              }}
             />
             {!fillLastName && (
               <h2 className="text-red-500">Vui lòng nhập tên</h2>
@@ -162,7 +168,10 @@ export default function DangKi() {
               defaultValue={address}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:shadow-lg"
               placeholder="Địa chỉ"
-              onChange={(e) => setAddress(e.target.value)}
+              onChange={(e) => {
+                setAddress(e.target.value);
+                setFillAddress(true);
+              }}
             />
             {!fillAddress && (
               <h2 className="text-red-500">Vui lòng nhập địa chỉ</h2>
@@ -177,7 +186,10 @@ export default function DangKi() {
               defaultValue={phoneNumber}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:shadow-lg"
               placeholder="Số điện thoại"
-              onChange={(e) => setPhoneNumber(e.target.value)}
+              onChange={(e) => {
+                setPhoneNumber(e.target.value);
+                setFillPhoneNumber(true);
+              }}
             />
             {!fillPhoneNumber && (
               <h2 className="text-red-500">Vui lòng nhập số điện thoại</h2>
@@ -192,14 +204,18 @@ export default function DangKi() {
               defaultValue={userName}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:shadow-lg"
               placeholder="Nhập tên đăng nhập"
-              onChange={(e) => setUserName(e.target.value)}
+              onChange={(e) => {
+                setUserName(e.target.value);
+                setFillUserName(true);
+                setResponseDangKi(null);
+              }}
             />
             {!fillUserName && (
               <h2 className="text-red-500">Vui lòng nhập tên đăng nhập</h2>
             )}
             {responseDangKi &&
               responseDangKi.tag === "ErrorUserName" &&
-              fillEmail && (
+              fillUserName && (
                 <h2 className="text-red-500">{responseDangKi.value}</h2>
               )}
           </div>
@@ -213,7 +229,12 @@ export default function DangKi() {
                 defaultValue={email}
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:shadow-lg"
                 placeholder="Email"
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setFillEmail(true);
+                  setResponseErrorEmail(null);
+                  setResponseDangKi(null);
+                }}
               />
               <button
                 type="button"
@@ -226,7 +247,7 @@ export default function DangKi() {
             {!fillEmail && (
               <h2 className="text-red-500">Vui lòng nhập email</h2>
             )}
-            {responseErrorEmail && fillEmail && (
+            {responseErrorEmail && fillEmail && !responseDangKi && (
               <h2 className="text-red-500">{responseErrorEmail}</h2>
             )}
             {responseDangKi &&
@@ -244,11 +265,20 @@ export default function DangKi() {
               defaultValue={code}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:shadow-lg"
               placeholder="Mã xác nhận"
-              onChange={(e) => setCode(e.target.value)}
+              onChange={(e) => {
+                setCode(e.target.value);
+                setFillCode(true);
+                setResponseDangKi(null);
+              }}
             />
             {!fillCode && (
               <h2 className="text-red-500">Vui lòng nhập mã xác nhận</h2>
             )}
+            {responseDangKi &&
+              responseDangKi.tag === "ErrorCode" &&
+              fillCode && (
+                <h2 className="text-red-500">{responseDangKi.value}</h2>
+              )}
           </div>
           <div className="mb-3 relative">
             <label className="block text-gray-700 text-sm font-bold mb-1">
@@ -286,11 +316,9 @@ export default function DangKi() {
             {!fillPassword && (
               <h2 className="text-red-500">Vui lòng nhập mật khẩu</h2>
             )}
-            {responseDangKi &&
-              responseDangKi.tag === "ErrorCode" &&
-              fillEmail && (
-                <h2 className="text-red-500">{responseDangKi.value}</h2>
-              )}
+            {responseDangKi && responseDangKi.tag === "CreateAccountOk" && (
+              <h2 className="text-blue-500">{responseDangKi.value}</h2>
+            )}
           </div>
           <div className="flex items-center justify-between">
             <button

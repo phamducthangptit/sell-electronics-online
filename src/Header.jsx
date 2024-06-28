@@ -4,6 +4,8 @@ import cart from "./image/cart.png";
 import { useNavigate } from "react-router-dom";
 export default function HomePage() {
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+
   const handleClickDangNhap = () => {
     // alert("hello");
     navigate("/dang-nhap");
@@ -13,7 +15,8 @@ export default function HomePage() {
     navigate("/dang-ki");
   };
   const handleClickDangXuat = () => {
-    alert("hello dang xuat");
+    navigate("/");
+    localStorage.clear();
   };
   const handleClickLogo = () => {
     navigate("/");
@@ -21,15 +24,28 @@ export default function HomePage() {
   return (
     <div>
       <div className="bg-black border-solid p-2 pr-6 flex items-center justify-end space-x-4">
-        <h2 className="text-white cursor-pointer" onClick={handleClickDangNhap}>
-          Đăng nhập
-        </h2>
-        <h2 className="text-white cursor-pointer" onClick={handleClickDangKi}>
-          Đăng kí
-        </h2>
-        <h2 className="text-white cursor-pointer" onClick={handleClickDangXuat}>
-          Đăng xuất
-        </h2>
+        {token === null && (
+          <h2
+            className="text-white cursor-pointer"
+            onClick={handleClickDangNhap}
+          >
+            Đăng nhập
+          </h2>
+        )}
+        {token === null && (
+          <h2 className="text-white cursor-pointer" onClick={handleClickDangKi}>
+            Đăng kí
+          </h2>
+        )}
+
+        {token && (
+          <h2
+            className="text-white cursor-pointer"
+            onClick={handleClickDangXuat}
+          >
+            Đăng xuất
+          </h2>
+        )}
       </div>
 
       <div className="bg-white border-solid p-4 md:p-6 flex items-center justify-between flex-wrap">

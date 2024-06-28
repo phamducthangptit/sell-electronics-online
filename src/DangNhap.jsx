@@ -9,6 +9,7 @@ export default function DangNhap() {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
+  const [responseLogin, setResponseLogin] = useState();
   const navigate = useNavigate();
 
   const togglePasswordVisibility = () => {
@@ -18,6 +19,32 @@ export default function DangNhap() {
   const handleClickBtnDangNhap = () => {
     console.log(userName);
     console.log(password);
+    fetch(`/api/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: userName,
+        password: password,
+      }),
+    })
+      .then((res) => {
+        if (res.status === 200) {
+          res.json().then((data) => {
+            localStorage.setItem("username", userName);
+            localStorage.setItem("token", data.value);
+            navigate("/");
+          });
+        } else if (res.status === 401) {
+          res.json().then((data) => {
+            setResponseLogin(data);
+          });
+        }
+      })
+      .catch((error) => {
+        console.error("Lỗi khi gọi API:", error);
+      });
   };
 
   const handleClickQuenMatKhau = () => {
@@ -42,7 +69,10 @@ export default function DangNhap() {
               defaultValue={userName}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:shadow-lg"
               placeholder="Nhập tên đăng nhập"
-              onChange={(e) => setUserName(e.target.value)}
+              onChange={(e) => {
+                setUserName(e.target.value);
+                setResponseLogin(null);
+              }}
             />
           </div>
           <div className="mb-3 relative">
@@ -58,7 +88,10 @@ export default function DangNhap() {
                 defaultValue={password}
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:shadow-lg"
                 placeholder="Nhập mật khẩu"
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setResponseLogin(null);
+                }}
               />
               <button
                 type="button"
@@ -80,6 +113,9 @@ export default function DangNhap() {
                 )}
               </button>
             </div>
+            {responseLogin && responseLogin.tag === "ErrorLogin" && (
+              <h2 className="text-red-500">{responseLogin.value}</h2>
+            )}
           </div>
           <div className="flex items-center justify-between">
             <button
