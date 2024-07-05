@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import Header from "./Header";
-import Footer from "./Footer";
-import visibility from "./image/visibility.png";
-import visibility_off from "./image/visibility_off.png";
+import Header from "../Header";
+import Footer from "../Footer";
+import visibility from "../image/visibility.png";
+import visibility_off from "../image/visibility_off.png";
+import NavBar from "../NavBar";
 
 export default function DangKi() {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -119,6 +120,7 @@ export default function DangKi() {
   return (
     <div>
       <Header />
+      <NavBar />
       <div className="flex items-center justify-center bg-gray-100 py-16">
         <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
           <h2 className="text-2xl font-bold mb-4 text-center">Đăng kí</h2>

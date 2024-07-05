@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import Header from "./Header";
-import Footer from "./Footer";
-import visibility from "./image/visibility.png";
-import visibility_off from "./image/visibility_off.png";
+import Header from "../Header";
+import Footer from "../Footer";
+import visibility from "../image/visibility.png";
+import visibility_off from "../image/visibility_off.png";
 import { useNavigate } from "react-router-dom";
 
 export default function DangNhap() {
@@ -17,8 +17,8 @@ export default function DangNhap() {
   };
 
   const handleClickBtnDangNhap = () => {
-    console.log(userName);
-    console.log(password);
+    // console.log(userName);
+    // console.log(password);
     fetch(`/api/auth/login`, {
       method: "POST",
       headers: {

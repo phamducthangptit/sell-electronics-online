@@ -2,24 +2,30 @@ import logo from "./image/logo.png";
 import account from "./image/account.png";
 import cart from "./image/cart.png";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 export default function HomePage() {
+  const [userName, setUserName] = useState();
+  useEffect(() => {
+    setUserName(localStorage.getItem("username"));
+  }, []);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
   const handleClickDangNhap = () => {
-    // alert("hello");
     navigate("/dang-nhap");
   };
   const handleClickDangKi = () => {
-    // alert("hello dang ki");
     navigate("/dang-ki");
   };
   const handleClickDangXuat = () => {
-    navigate("/");
+    window.location = "/"; // set return home
     localStorage.clear();
   };
   const handleClickLogo = () => {
     navigate("/");
+  };
+  const handelClickDoiMatKhau = () => {
+    navigate("/doi-mat-khau");
   };
   return (
     <div>
@@ -35,6 +41,14 @@ export default function HomePage() {
         {token === null && (
           <h2 className="text-white cursor-pointer" onClick={handleClickDangKi}>
             Đăng kí
+          </h2>
+        )}
+        {token && (
+          <h2
+            className="text-white cursor-pointer"
+            onClick={handelClickDoiMatKhau}
+          >
+            Đổi mật khẩu
           </h2>
         )}
 
@@ -77,7 +91,7 @@ export default function HomePage() {
         <div className="flex items-center">
           <div className="mr-4 flex items-center">
             <img src={account} alt="" className="w-9" />
-            <h1 className="cursor-pointer">Duc Thang Pham</h1>
+            <h1 className="cursor-pointer">{userName}</h1>
           </div>
           <div className="cursor-pointer">
             <img src={cart} alt="" className="w-9" />
