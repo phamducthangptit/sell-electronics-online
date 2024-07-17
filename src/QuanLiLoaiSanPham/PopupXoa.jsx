@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from "react";
 
 const PopupXoa = ({ show, onClose, item, onSave }) => {
-  const [responseDelete, setResponseDelete] = useState();
+  const [responseDelete, setResponseDelete] = useState(null);
   const token = localStorage.getItem("token");
 
+  useEffect(() => {
+    setResponseDelete(null);
+  }, [show]);
   const handleXacNhanXoa = () => {
     fetch(
-      `api/product-service/manufacturer/delete-manufacturer?id=${item.manufacturerId}`,
+      `api/product-service/category/delete-category?id=${item.categoryId}`,
       {
         method: "DELETE",
         headers: {
@@ -22,7 +25,7 @@ const PopupXoa = ({ show, onClose, item, onSave }) => {
             onSave(item);
             onClose();
           });
-        } else if (res.status === 400) {
+        } else if (res.status === 409) {
           res.json().then((data) => setResponseDelete(data));
           console.log("bug");
         }
@@ -31,9 +34,6 @@ const PopupXoa = ({ show, onClose, item, onSave }) => {
         console.error("Lỗi khi gọi API:", error);
       });
   };
-  useEffect(() => {
-    setResponseDelete(null);
-  }, [show]);
 
   if (!show) return null;
 
@@ -56,13 +56,12 @@ const PopupXoa = ({ show, onClose, item, onSave }) => {
         <div className="space-y-4">
           <div>
             <label className="block text-blue-700">
-              Bạn có muốn xóa nhà sản xuất: {item.name}
+              Bạn có muốn xóa loại sản phẩm: {item.name}
             </label>
           </div>
-          {responseDelete &&
-            responseDelete.tag === "deleteManufacturerError" && (
-              <h2 className="text-red-500">{responseDelete.value}</h2>
-            )}
+          {responseDelete && responseDelete.tag === "DeleteCategoryError" && (
+            <h2 className="text-red-500">{responseDelete.value}</h2>
+          )}
         </div>
         <div className="flex justify-end mt-6">
           <button

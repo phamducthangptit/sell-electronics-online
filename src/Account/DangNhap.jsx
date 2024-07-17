@@ -19,7 +19,7 @@ export default function DangNhap() {
   const handleClickBtnDangNhap = () => {
     // console.log(userName);
     // console.log(password);
-    fetch(`/api/auth/login`, {
+    fetch(`/api/auth-service/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

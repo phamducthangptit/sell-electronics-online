@@ -33,7 +33,7 @@ const Popup = ({ show, onClose, item, onSave }) => {
   };
 
   const handleSave = () => {
-    fetch(`api/information/admin/update-information-employee`, {
+    fetch(`api/information-service/admin/update-information-employee`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,

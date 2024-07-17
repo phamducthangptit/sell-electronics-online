@@ -36,7 +36,7 @@ const Popup = ({ show, onClose, item, onSave }) => {
 
   const handleSave = () => {
     //call Api
-    fetch(`api/information/admin/add-employee`, {
+    fetch(`api/information-service/admin/add-employee`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,

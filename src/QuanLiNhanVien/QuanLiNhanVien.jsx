@@ -21,7 +21,7 @@ export default function QuanLiNhanVien() {
     setCurrentItem(null);
   };
   useEffect(() => {
-    fetch(`api/information/admin/list-employee`, {
+    fetch(`api/information-service/admin/list-employee`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,

@@ -30,7 +30,7 @@ export default function QuenMatKhau() {
     // console.log(passwordNew);
     if (email !== "" && userName !== "" && passwordNew !== "") {
       console.log("abc");
-      fetch(`/api/information/user/reset-password`, {
+      fetch(`/api/information-service/user/reset-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

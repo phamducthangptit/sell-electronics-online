@@ -38,7 +38,7 @@ export default function DangKi() {
     console.log(email);
     if (fillEmail) {
       // call api
-      fetch(`/api/auth/send-code?email=${email}`, {
+      fetch(`/api/auth-service/send-code?email=${email}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -79,7 +79,7 @@ export default function DangKi() {
       fillPhoneNumber &&
       fillCode
     ) {
-      fetch(`/api/auth/register`, {
+      fetch(`/api/auth-service/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -28,7 +28,7 @@ export default function QuanLiNhaSanXuat() {
   };
 
   useEffect(() => {
-    fetch(`api/product/manufacturer/get-all-manufacturer`, {
+    fetch(`api/product-service/manufacturer/get-all-manufacturer`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -39,6 +39,7 @@ export default function QuanLiNhaSanXuat() {
         if (res.status === 200) {
           res.json().then((data) => {
             setManufacturerData(data);
+            console.log(data);
           });
         }
       })

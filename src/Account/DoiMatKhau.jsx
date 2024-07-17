@@ -39,7 +39,7 @@ export default function QuenMatKhau() {
     if (!passwordNewRepeat) setConfirmPassword(false);
     if (passwordOld !== "" && passwordNew !== "" && confirmPassword) {
       console.log("abc");
-      fetch(`/api/information/user/change-password`, {
+      fetch(`/api/information-service/user/change-password`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

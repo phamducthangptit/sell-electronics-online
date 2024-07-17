@@ -1,4 +1,3 @@
-import { format } from "date-fns";
 import active from "../image/active.png";
 import inactive from "../image/inactive.png";
 import edit from "../image/edit.png";
@@ -30,7 +29,7 @@ const EmployeeTable = ({ data }) => {
     console.log(userId);
     console.log(status);
     // call api update status in database
-    fetch(`api/information/admin/update-status-account`, {
+    fetch(`api/information-service/admin/update-status-account`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -87,11 +86,7 @@ const EmployeeTable = ({ data }) => {
               <td className="border px-4 py-2">{user.email}</td>
               <td className="border px-4 py-2">{user.address}</td>
               <td className="border px-4 py-2">{user.phoneNumber}</td>
-              <td className="border px-4 py-2">
-                {user.createAt
-                  ? format(new Date(user.createAt), "dd-MM-yyyy HH:mm:ss")
-                  : "N/A"}
-              </td>
+              <td className="border px-4 py-2">{user.createAt}</td>
               <td className="border px-4 py-2">
                 <div
                   className="flex justify-center items-center"
