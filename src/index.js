@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import HomePage from './HomePage';
+import HomePage from './HomePage/HomePage';
 import DangNhap from './Account/DangNhap';
 import DangKi from './Account/DangKi';
 import QuenMatKhau from './Account/QuenMatKhau';
@@ -12,6 +12,13 @@ import QuanLiNhaSanXuat from './QuanLiNhaSanXuat/QuanLiNhaSanXuat';
 import QuanLiLoaiSanPham from './QuanLiLoaiSanPham/QuanLiLoaiSanPham';
 import QuanLiSanPham from './QuanLiSanPham/QuanLiSanPham';
 import ThemSanPham from "./QuanLiSanPham/ThemSanPham";
+import ChinhSuaSanPham from "./QuanLiSanPham/ChinhSuaSanPham";
+import ProductDetail from './HomePage/ProductDetail';
+import GioHang from "./DonHang_Khach/GioHang";
+import DonHang from "./DonHang_Khach/DonHang";
+import XacNhanDonHang from "./DonHang_Khach/XacNhanDonHang";
+import DonHangDetail from "./DonHang_Khach/DonHangDetail";
+import QuanLiDonHang from './QuanLiDonHang/QuanLiDonHang';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 export default function Sell() {
@@ -30,6 +37,13 @@ export default function Sell() {
           <Route path='quan-li-loai-san-pham' element={<QuanLiLoaiSanPham />} />
           <Route path='quan-li-san-pham' element={<QuanLiSanPham />} />
           <Route path='them-san-pham' element={<ThemSanPham />} />
+          <Route path='chinh-sua-san-pham' element={<ChinhSuaSanPham />} />
+          <Route path='chi-tiet-san-pham' element={<ProductDetail />} />
+          <Route path='gio-hang' element={<GioHang />} />
+          <Route path='don-hang' element={<DonHang />} />
+          <Route path='xac-nhan-don-hang' element={<XacNhanDonHang />} />
+          <Route path='chi-tiet-don-hang' element={<DonHangDetail />} />
+          <Route path='quan-li-don-hang' element={<QuanLiDonHang />} />
         </Route>
       </Routes>
     </BrowserRouter>

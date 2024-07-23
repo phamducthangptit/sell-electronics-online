@@ -12,6 +12,7 @@ const ManufacturerTable = ({ data, setManufacturerData }) => {
   const [currentItemXoa, setCurrentItemXoa] = useState(null);
 
   const togglePopupChinhSua = (item) => {
+    console.log(item);
     setCurrentItemChinhSua(item);
     setPopupChinhSuaOpen(!isPopupChinhSuaOpen);
   };

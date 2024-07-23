@@ -4,6 +4,7 @@ import Footer from "../Footer";
 import visibility from "../image/visibility.png";
 import visibility_off from "../image/visibility_off.png";
 import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 
 export default function DangNhap() {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -34,9 +35,23 @@ export default function DangNhap() {
           res.json().then((data) => {
             localStorage.setItem("username", userName);
             localStorage.setItem("token", data.value);
-            navigate("/");
+            const decoded = jwtDecode(data.value);
+            const role = decoded.role;
+            if (role === "ADMIN") {
+              navigate("/quan-li-doanh-thu");
+            }
+            if (role === "EMPLOYEE") {
+              navigate("/quan-li-don-hang");
+            }
+            if (role === "GUEST") {
+              navigate("/");
+            }
           });
         } else if (res.status === 401) {
+          res.json().then((data) => {
+            setResponseLogin(data);
+          });
+        } else if (res.status === 400) {
           res.json().then((data) => {
             setResponseLogin(data);
           });
@@ -114,6 +129,9 @@ export default function DangNhap() {
               </button>
             </div>
             {responseLogin && responseLogin.tag === "ErrorLogin" && (
+              <h2 className="text-red-500">{responseLogin.value}</h2>
+            )}
+            {responseLogin && responseLogin.tag === "ErrorStatus" && (
               <h2 className="text-red-500">{responseLogin.value}</h2>
             )}
           </div>

@@ -3,13 +3,32 @@ import account from "./image/account.png";
 import cart from "./image/cart.png";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-export default function HomePage() {
+import { jwtDecode } from "jwt-decode";
+export default function Header({ cartCount }) {
   const [userName, setUserName] = useState();
-  useEffect(() => {
-    setUserName(localStorage.getItem("username"));
-  }, []);
+  const [role, setRole] = useState(null);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  useEffect(() => {
+    setUserName(localStorage.getItem("username"));
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        const currentTime = Date.now() / 1000;
+
+        if (decoded.exp < currentTime) {
+          // Token đã hết hạn
+          localStorage.removeItem("token");
+        } else {
+          setRole(decoded.role);
+          // console.log(decoded);
+        }
+      } catch (error) {
+        console.error("Invalid token:", error);
+        localStorage.removeItem("token");
+      }
+    }
+  }, [token]);
 
   const handleClickDangNhap = () => {
     navigate("/dang-nhap");
@@ -26,6 +45,9 @@ export default function HomePage() {
   };
   const handelClickDoiMatKhau = () => {
     navigate("/doi-mat-khau");
+  };
+  const handleClickCart = () => {
+    navigate("/gio-hang");
   };
   return (
     <div>
@@ -93,9 +115,19 @@ export default function HomePage() {
             <img src={account} alt="" className="w-9" />
             <h1 className="cursor-pointer">{userName}</h1>
           </div>
-          <div className="cursor-pointer">
-            <img src={cart} alt="" className="w-9" />
-          </div>
+          {role === "GUEST" && (
+            <div className="relative cursor-pointer">
+              <img
+                src={cart}
+                alt=""
+                className="w-9"
+                onClick={handleClickCart}
+              />
+              <span className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">
+                {cartCount}
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -2,16 +2,17 @@ import { useEffect, useState } from "react";
 import Header from "../Header";
 import NavBar from "../NavBar";
 import ProductTable from "./ProductTable";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 export default function QuanLiSanPham() {
   const [productData, setProductData] = useState([]);
   const [categoryData, setCategoryData] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState();
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    fetch(`api/product-service/category/get-all-category`, {
+    fetch(`api/product-service/employee/category/get-all-category`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -22,7 +23,12 @@ export default function QuanLiSanPham() {
         if (res.status === 200) {
           res.json().then((data) => {
             setCategoryData(data);
-            setSelectedCategory(data[0].categoryId);
+            const categoryFromState = location.state?.selectedCategory;
+            if (categoryFromState) {
+              setSelectedCategory(categoryFromState);
+            } else {
+              setSelectedCategory(data[0].categoryId);
+            }
             console.log(data);
           });
         }
@@ -30,7 +36,7 @@ export default function QuanLiSanPham() {
       .catch((error) => {
         console.error("Lỗi khi gọi API:", error);
       });
-  }, [token]);
+  }, [token, location.state]);
 
   const handleCategoryChange = (event) => {
     setSelectedCategory(event.target.value);
@@ -39,7 +45,7 @@ export default function QuanLiSanPham() {
   useEffect(() => {
     console.log(selectedCategory);
     fetch(
-      `api/product-service/product/get-all-product-by-category?id=${selectedCategory}`,
+      `api/product-service/employee/product/get-all-product-by-category?id=${selectedCategory}`,
       {
         method: "GET",
         headers: {

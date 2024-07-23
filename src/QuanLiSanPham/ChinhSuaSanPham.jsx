@@ -4,10 +4,10 @@ import NavBar from "../NavBar";
 import storage from "../FirebaseImage/Config"; // Ensure this is correct path to your Firebase config
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Import necessary methods from firebase/storage
 import down from "../image/down.png";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import uploadImage from "../image/uploadfile.png";
 
-export default function ThemSanPham() {
+export default function ChinhSuaSanPham() {
   const [images, setImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [productName, setProductName] = useState("");
@@ -21,7 +21,40 @@ export default function ThemSanPham() {
   const token = localStorage.getItem("token");
   const [categoryDetailData, setCategoryDetailData] = useState([]);
   const [attributes, setAttributes] = useState([]);
+  const [productDetail, setProductDetail] = useState(null);
+  const location = useLocation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setProductDetail(location.state.productDetail);
+    console.log(location.state.productDetail);
+  }, [location.state]);
+
+  useEffect(() => {
+    if (productDetail) {
+      setProductName(productDetail.name);
+      setProductDescription(productDetail.description);
+      setPrice(productDetail.price);
+      setQuantity(productDetail.stock);
+      setSelectedCategory(productDetail.categoryId);
+      setSelectedManufacturer(productDetail.manufacturerId);
+
+      if (productDetail.listDetail) {
+        setAttributes(
+          productDetail.listDetail.map((detail) => ({
+            detailId: detail.detailId,
+            name: detail.name,
+            value: detail.value,
+          }))
+        );
+      }
+
+      if (productDetail.image) {
+        setImagePreviews(productDetail.image);
+        setImages(productDetail.image);
+      }
+    }
+  }, [productDetail]);
 
   useEffect(() => {
     fetch(`api/product-service/employee/category/get-all-category`, {
@@ -35,8 +68,6 @@ export default function ThemSanPham() {
         if (res.status === 200) {
           res.json().then((data) => {
             setCategoryData(data);
-            setSelectedCategory(data[0].categoryId);
-            console.log(data);
           });
         }
       })
@@ -57,7 +88,6 @@ export default function ThemSanPham() {
         if (res.status === 200) {
           res.json().then((data) => {
             setManufacturerData(data);
-            setSelectedManufacturer(data[0].manufacturerId);
           });
         }
       })
@@ -67,9 +97,11 @@ export default function ThemSanPham() {
   }, [token]);
 
   const handleFileChange = (e) => {
-    const selectedFiles = Array.from(e.target.files);
+    const selectedFiles = Array.from(e.target.files).map((file) => {
+      file._isNew = true; // Đánh dấu ảnh mới
+      return file;
+    });
     const newImages = [...images, ...selectedFiles];
-
     const newPreviews = [
       ...imagePreviews,
       ...selectedFiles.map((file) => URL.createObjectURL(file)),
@@ -80,15 +112,22 @@ export default function ThemSanPham() {
   };
 
   const handleDelete = (index) => {
-    const newImages = images.filter((_, i) => i !== index);
-    const newPreviews = imagePreviews.filter((_, i) => i !== index);
+    const newImages = [];
+    const newPreviews = [];
 
+    for (let i = 0; i < images.length; i++) {
+      if (i !== index) {
+        newImages.push(images[i]);
+        newPreviews.push(imagePreviews[i]);
+      } else {
+        URL.revokeObjectURL(imagePreviews[i]);
+      }
+    }
     setImages(newImages);
     setImagePreviews(newPreviews);
   };
 
   useEffect(() => {
-    console.log(selectedCategory);
     fetch(
       `api/product-service/employee/category/get-category-detail?category-id=${selectedCategory}`,
       {
@@ -105,7 +144,12 @@ export default function ThemSanPham() {
             const initialAttributes = data.map((detail) => ({
               detailId: detail.detailId,
               name: detail.name,
-              value: "", // Set initial value to empty string
+              value:
+                attributes.find(
+                  (attr) =>
+                    attr.detailId === detail.detailId &&
+                    productDetail.categoryId === selectedCategory
+                )?.value || "",
             }));
             setAttributes(initialAttributes);
             setCategoryDetailData(data);
@@ -120,21 +164,57 @@ export default function ThemSanPham() {
   const handleSave = async () => {
     const urls = [];
 
-    for (let i = 0; i < images.length; i++) {
-      const image = images[i];
-      const imageRef = ref(storage, `images/product/${image.name}`); // Create a reference to the file in storage
-      await uploadBytes(imageRef, image); // Upload the file to the reference
-      const url = await getDownloadURL(imageRef); // Get the download URL
+    // Lấy URLs từ productDetail.image và so sánh với imagePreviews để xác định các URL cũ cần giữ lại
+    const oldUrls = productDetail.image || [];
+    const remainingUrls = oldUrls.filter((url) => imagePreviews.includes(url));
+
+    // Lọc ra các ảnh mới dựa trên thuộc tính `_isNew`
+    const newImages = images.filter((image) => image._isNew);
+
+    // Tải lên các ảnh mới vào Firebase và lấy URL
+    for (let i = 0; i < newImages.length; i++) {
+      const image = newImages[i];
+      const imageRef = ref(storage, `images/product/${image.name}`);
+      await uploadBytes(imageRef, image);
+      const url = await getDownloadURL(imageRef);
       urls.push(url);
     }
 
-    fetch(`api/product-service/employee/product/add-new-product`, {
+    // Kết hợp URLs mới với những URLs cũ còn tồn tại
+    const updatedUrls = [...remainingUrls, ...urls];
+
+    console.log(updatedUrls);
+    const formData = {
+      productId: productDetail.productId,
+      name: productName,
+      images: updatedUrls,
+      description: productDescription,
+      price: price,
+      stock: quantity,
+      categoryId: selectedCategory,
+      manufacturerId: selectedManufacturer,
+      productDetails: attributes.map((attr) => ({
+        detailId: attr.detailId,
+        name: attr.name,
+        value: attr.value,
+      })),
+    };
+    console.log(formData);
+    // for (let i = 0; i < images.length; i++) {
+    //   const image = images[i];
+    //   const imageRef = ref(storage, `images/product/${image.name}`); // Create a reference to the file in storage
+    //   await uploadBytes(imageRef, image); // Upload the file to the reference
+    //   const url = await getDownloadURL(imageRef); // Get the download URL
+    //   urls.push(url);
+    // }
+    fetch(`api/product-service/employee/product/update-product`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        productId: productDetail.productId,
         name: productName,
         description: productDescription,
         price: price,
@@ -146,16 +226,13 @@ export default function ThemSanPham() {
           name: attr.name,
           value: attr.value,
         })),
-        images: urls,
+        images: updatedUrls,
       }),
     })
       .then((res) => {
         if (res.status === 200) {
-          res.json().then((data) => {
-            console.log(data);
-            navigate("/quan-li-san-pham", {
-              state: { selectedCategory: selectedCategory },
-            });
+          navigate("/quan-li-san-pham", {
+            state: { selectedCategory: selectedCategory },
           });
         }
       })
@@ -168,16 +245,13 @@ export default function ThemSanPham() {
     setAttributes((prevAttributes) => {
       const updatedAttributes = [...prevAttributes];
 
-      // Kiểm tra xem phần tử tại index đã tồn tại trong mảng chưa
       if (!updatedAttributes[index]) {
-        // Nếu chưa tồn tại, bạn có thể tạo mới nó
         updatedAttributes[index] = {
           detailId: categoryDetailData[index]?.detailId || null,
           name: categoryDetailData[index]?.name || "",
           value: value,
         };
       } else {
-        // Nếu đã tồn tại, chỉ cập nhật giá trị value
         updatedAttributes[index].value = value;
       }
 
@@ -190,7 +264,6 @@ export default function ThemSanPham() {
       <Header />
       <NavBar />
       <div className="flex">
-        {/* Cột cho ảnh */}
         <div className="w-1/2 p-4 flex flex-col items-center">
           <div className="flex flex-wrap">
             {imagePreviews.map((preview, index) => (
@@ -232,7 +305,6 @@ export default function ThemSanPham() {
           </label>
         </div>
 
-        {/* Cột cho thông tin sản phẩm */}
         <div className="w-1/2 p-4">
           <div className="mb-4">
             <label
@@ -277,13 +349,11 @@ export default function ThemSanPham() {
                     </option>
                   ))}
                 </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-700">
-                  <img
-                    src={down}
-                    alt="Arrow Down"
-                    className="w-5 h-5 mx-auto"
-                  />
-                </div>
+                <img
+                  src={down}
+                  alt="dropdown"
+                  className="absolute right-2 top-2 w-4 h-4 pointer-events-none"
+                />
               </div>
             </div>
             <div className="w-1/2 pl-2 relative">
@@ -291,14 +361,16 @@ export default function ThemSanPham() {
                 className="block text-gray-700 text-sm font-bold mb-2"
                 htmlFor="manufacturer"
               >
-                Hãng sản xuất
+                Nhà sản xuất
               </label>
               <div className="relative">
                 <select
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline pr-8"
                   id="manufacturer"
                   value={selectedManufacturer}
-                  onChange={(e) => setSelectedManufacturer(e.target.value)}
+                  onChange={(e) => {
+                    setSelectedManufacturer(e.target.value);
+                  }}
                 >
                   {manufacturerData.map((manufacturer) => (
                     <option
@@ -309,13 +381,11 @@ export default function ThemSanPham() {
                     </option>
                   ))}
                 </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-700">
-                  <img
-                    src={down}
-                    alt="Arrow Down"
-                    className="w-5 h-5 mx-auto"
-                  />
-                </div>
+                <img
+                  src={down}
+                  alt="dropdown"
+                  className="absolute right-2 top-2 w-4 h-4 pointer-events-none"
+                />
               </div>
             </div>
           </div>
@@ -362,15 +432,16 @@ export default function ThemSanPham() {
                 className="block text-gray-700 text-sm font-bold mb-2"
                 htmlFor="price"
               >
-                Giá bán
+                Giá
               </label>
               <input
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 id="price"
-                type="number"
-                placeholder="Nhập giá bán"
+                type="text"
+                placeholder="Nhập giá"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
+                required
               />
             </div>
             <div className="w-1/2 pl-2">
@@ -383,10 +454,11 @@ export default function ThemSanPham() {
               <input
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 id="quantity"
-                type="number"
+                type="text"
                 placeholder="Nhập số lượng"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
+                required
               />
             </div>
           </div>
@@ -400,17 +472,19 @@ export default function ThemSanPham() {
             <textarea
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               id="productDescription"
+              rows="5"
               placeholder="Nhập mô tả sản phẩm"
               value={productDescription}
               onChange={(e) => setProductDescription(e.target.value)}
-            />
+              required
+            ></textarea>
           </div>
           <button
-            onClick={handleSave}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
             type="button"
-            className="bg-blue-500 text-white px-4 py-2 mt-4"
+            onClick={handleSave}
           >
-            Lưu
+            Lưu sản phẩm
           </button>
         </div>
       </div>

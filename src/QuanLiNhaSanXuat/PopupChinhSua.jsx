@@ -57,7 +57,7 @@ const Popup = ({ show, onClose, item, onSave }) => {
     } else formData.image = item.image;
 
     if (formData.name !== "" && formData.country !== "") {
-      fetch(`api/product-service/manufacturer/update-manufacturer`, {
+      fetch(`api/product-service/employee/manufacturer/update-manufacturer`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

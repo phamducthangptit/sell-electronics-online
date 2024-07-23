@@ -9,7 +9,7 @@ const PopupXoa = ({ show, onClose, item, onSave }) => {
   }, [show]);
   const handleXacNhanXoa = () => {
     fetch(
-      `api/product-service/category/delete-category?id=${item.categoryId}`,
+      `api/product-service/employee/category/delete-category?id=${item.categoryId}`,
       {
         method: "DELETE",
         headers: {

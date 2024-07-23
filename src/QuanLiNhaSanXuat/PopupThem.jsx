@@ -52,7 +52,7 @@ const Popup = ({ show, onClose, onSave }) => {
     urls.push(url);
 
     if (formData.name !== "" && formData.country !== "") {
-      fetch(`api/product-service/manufacturer/add-manufacturer`, {
+      fetch(`api/product-service/employee/manufacturer/add-manufacturer`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

@@ -6,7 +6,7 @@ const PopupXoa = ({ show, onClose, item, onSave }) => {
 
   const handleXacNhanXoa = () => {
     fetch(
-      `api/product-service/manufacturer/delete-manufacturer?id=${item.manufacturerId}`,
+      `api/product-service/employee/manufacturer/delete-manufacturer?id=${item.manufacturerId}`,
       {
         method: "DELETE",
         headers: {

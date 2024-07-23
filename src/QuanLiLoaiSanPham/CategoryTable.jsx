@@ -3,6 +3,7 @@ import dele from "../image/delete.png";
 import { useEffect, useState } from "react";
 import PopupXoa from "./PopupXoa";
 import PopupChinhSua from "./PopupChinhSua";
+import defaultproduct from "../image/defaultproduct.jpg";
 const CategoryTable = ({ data, setCategory }) => {
   const [isPopupChinhSuaOpen, setPopupChinhSuaOpen] = useState(false);
   const [currentItemChinhSua, setCurrentItemChinhSua] = useState(null);
@@ -31,7 +32,7 @@ const CategoryTable = ({ data, setCategory }) => {
       if (item.categoryId === dataEdit.categoryId) {
         item.name = dataEdit.name;
         item.detailList = dataEdit.categoryDetails;
-        // Cập nhật các thuộc tính khác nếu cần
+        item.image = dataEdit.image;
       }
       return item;
     });
@@ -51,6 +52,7 @@ const CategoryTable = ({ data, setCategory }) => {
         <thead>
           <tr className="bg-blue-500 text-white">
             <th className="px-4 py-2 border border-gray-200">STT</th>
+            <th className="px-4 py-2 border border-gray-200">Logo</th>
             <th className="px-4 py-2 border border-gray-200">
               Tên loại sản phẩm
             </th>
@@ -63,6 +65,15 @@ const CategoryTable = ({ data, setCategory }) => {
               <td className="border px-4 py-2">
                 <div className="flex justify-center items-center">
                   {index + 1}
+                </div>
+              </td>
+              <td className="border px-4 py-2">
+                <div className="flex justify-center items-center">
+                  <img
+                    src={category.image ? category.image : defaultproduct}
+                    alt=""
+                    className="w-20 h-20"
+                  />
                 </div>
               </td>
               <td className="border px-4 py-2">{category.name}</td>

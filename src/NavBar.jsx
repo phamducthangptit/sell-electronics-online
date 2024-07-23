@@ -8,15 +8,13 @@ export default function NavBar() {
   const [activeTab, setActiveTab] = useState(location.pathname);
   const meuItemGuest = [
     { name: "Trang chủ", link: "/" },
-    { name: "Laptops", link: "/dang-ki" },
+    { name: "Đơn hàng", link: "/don-hang" },
   ];
   const meuItemAdmin = [
-    { name: "Trang chủ", link: "/" },
     { name: "Quản lí nhân viên", link: "/quan-li-nhan-vien" },
     { name: "Quản lí doanh thu", link: "/quan-li-doanh-thu" },
   ];
   const meuItemEmployee = [
-    { name: "Trang chủ", link: "/" },
     { name: "Quản lí khách hàng", link: "/quan-li-khach-hang" },
     { name: "Quản lí đơn hàng", link: "/quan-li-don-hang" },
     { name: "Quản lí sản phẩm", link: "/quan-li-san-pham" },

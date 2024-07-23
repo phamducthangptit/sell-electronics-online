@@ -12,16 +12,15 @@ const Popup = ({ show, onClose, item, onSave }) => {
   });
 
   useEffect(() => {
-    if (item) {
-      setFormData({
-        firstName: item.firstName || "",
-        lastName: item.lastName || "",
-        email: item.email || "",
-        address: item.address || "",
-        phoneNumber: item.phoneNumber || "",
-      });
-    }
-  }, [item]);
+    setErrorEmail(null);
+    setFormData({
+      firstName: item.firstName || "",
+      lastName: item.lastName || "",
+      email: item.email || "",
+      address: item.address || "",
+      phoneNumber: item.phoneNumber || "",
+    });
+  }, [show, item]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

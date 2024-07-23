@@ -28,7 +28,7 @@ export default function QuanLiNhaSanXuat() {
   };
 
   useEffect(() => {
-    fetch(`api/product-service/manufacturer/get-all-manufacturer`, {
+    fetch(`api/product-service/employee/manufacturer/get-all-manufacturer`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,

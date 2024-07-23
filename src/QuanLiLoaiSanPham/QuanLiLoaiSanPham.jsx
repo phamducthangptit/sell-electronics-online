@@ -12,11 +12,13 @@ export default function QuanLiLoaiSanPham() {
   };
 
   const handleSave = (addNewCategory) => {
+    console.log("abc");
+    console.log(addNewCategory);
     setCategoryData([...categoryData, addNewCategory]);
   };
 
   useEffect(() => {
-    fetch(`api/product-service/category/get-all-category`, {
+    fetch(`api/product-service/employee/category/get-all-category`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
