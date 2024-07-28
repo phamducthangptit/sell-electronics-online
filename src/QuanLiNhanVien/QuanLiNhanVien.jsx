@@ -60,7 +60,6 @@ export default function QuanLiNhanVien() {
         onClose={() => {
           setPopupOpen(false);
         }}
-        item={currentItem}
         onSave={handleSave}
       />
     </div>

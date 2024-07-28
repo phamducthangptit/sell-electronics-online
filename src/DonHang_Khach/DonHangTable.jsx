@@ -1,7 +1,7 @@
 import detail from "../image/detail.png";
 import invoice from "../image/invoice.svg";
 import { useNavigate } from "react-router-dom";
-const DonHangTable = ({ data }) => {
+const DonHangTable = ({ data, setData }) => {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const handleClickXemChiTietDonHang = (order) => {
@@ -21,6 +21,17 @@ const DonHangTable = ({ data }) => {
       })
         .then((res) => {
           if (res.status === 200) {
+            const updatedData = data.map((order) =>
+              order.orderId === orderId
+                ? {
+                    ...order,
+                    checkStatus: 0,
+                    status: "Hoàn thành",
+                    statusPayment: 1,
+                  }
+                : order
+            );
+            setData(updatedData);
           }
         })
         .catch((error) => {
@@ -45,6 +56,9 @@ const DonHangTable = ({ data }) => {
               Địa chỉ nhận hàng
             </th>
             <th className="px-4 py-2 border border-gray-200">SDT</th>
+            <th className="px-4 py-2 border border-gray-200">
+              Trạng thái thanh toán
+            </th>
             <th className="px-4 py-2 border border-gray-200">Trạng thái</th>
             <th className="px-4 py-2 border border-gray-200">Tác vụ</th>
           </tr>
@@ -68,6 +82,11 @@ const DonHangTable = ({ data }) => {
               </td>
               <td className="border px-4 py-2">{order.address}</td>
               <td className="border px-4 py-2">{order.phone}</td>
+              <td className="border px-4 py-2">
+                {order.statusPayment === 1
+                  ? "Đã thanh toán"
+                  : "Chưa thanh toán"}
+              </td>
               <td className="border px-4 py-2">{order.status}</td>
               <td className="border px-4 py-2">
                 <div className="flex justify-center items-center">
@@ -78,7 +97,7 @@ const DonHangTable = ({ data }) => {
                     onClick={() => handleClickXemChiTietDonHang(order)}
                   />
                 </div>
-                {order.checkStatus === 1 && (
+                {order.checkStatusInvoice === 1 && (
                   <div className="flex justify-center items-center">
                     <img
                       src={invoice}
@@ -91,7 +110,7 @@ const DonHangTable = ({ data }) => {
                   <div className="flex justify-center mt-4">
                     <button
                       type="submit"
-                      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline whitespace-nowrap"
                       onClick={() => handleConfirmOrder(order.orderId)}
                     >
                       Đã nhận hàng

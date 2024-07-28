@@ -38,7 +38,7 @@ export default function DangNhap() {
             const decoded = jwtDecode(data.value);
             const role = decoded.role;
             if (role === "ADMIN") {
-              navigate("/quan-li-doanh-thu");
+              navigate("/quan-li-nhan-vien");
             }
             if (role === "EMPLOYEE") {
               navigate("/quan-li-don-hang");

@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import CategoryCard from "./CategoryCard";
 import { useDrag } from "@use-gesture/react";
 
-const CategoryGrid = () => {
+const CategoryGrid = ({ onCategoryClick }) => {
   const [categories, setCategories] = useState([]);
   const containerRef = useRef(null);
 
@@ -48,6 +48,7 @@ const CategoryGrid = () => {
             categoryId={category.categoryId}
             image={category.image}
             name={category.name}
+            onClick={onCategoryClick}
             className="flex-none"
           />
         ))}

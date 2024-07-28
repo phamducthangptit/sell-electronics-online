@@ -12,14 +12,15 @@ export default function NavBar() {
   ];
   const meuItemAdmin = [
     { name: "Quản lí nhân viên", link: "/quan-li-nhan-vien" },
-    { name: "Quản lí doanh thu", link: "/quan-li-doanh-thu" },
+    { name: "Thống kê doanh thu", link: "/thong-ke-doanh-thu" },
+    { name: "Thống kê đơn hàng", link: "/thong-ke-don-hang" },
   ];
   const meuItemEmployee = [
-    { name: "Quản lí khách hàng", link: "/quan-li-khach-hang" },
     { name: "Quản lí đơn hàng", link: "/quan-li-don-hang" },
     { name: "Quản lí sản phẩm", link: "/quan-li-san-pham" },
     { name: "Quản lí loại sản phẩm", link: "/quan-li-loai-san-pham" },
     { name: "Quản lí nhà sản xuất", link: "/quan-li-nha-san-xuat" },
+    { name: "Quản lí khách hàng", link: "/quan-li-khach-hang" },
   ];
   useEffect(() => {
     const token = localStorage.getItem("token");

@@ -2,22 +2,39 @@ import { useState } from "react";
 import defaultproduct from "../image/defaultproduct.jpg";
 import { useNavigate } from "react-router-dom";
 import Popup from "../HomePage/Popup";
+
 const GioHangTable = ({ data, onQuantityChange }) => {
   const navigate = useNavigate();
   const [isPopup, setPopupOpen] = useState(false);
   const [response, setResponse] = useState(null);
   const [selectedProducts, setSelectedProducts] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
   const token = localStorage.getItem("token");
   const userName = localStorage.getItem("username");
+
   const handleCheckboxChange = (product) => {
     if (selectedProducts.some((item) => item.productId === product.productId)) {
-      setSelectedProducts(
-        selectedProducts.filter((item) => item.productId !== product.productId)
+      const newSelectedProducts = selectedProducts.filter(
+        (item) => item.productId !== product.productId
       );
+      setSelectedProducts(newSelectedProducts);
+      setSelectAll(newSelectedProducts.length === data.length);
     } else {
-      setSelectedProducts([...selectedProducts, product]);
+      const newSelectedProducts = [...selectedProducts, product];
+      setSelectedProducts(newSelectedProducts);
+      setSelectAll(newSelectedProducts.length === data.length);
     }
   };
+
+  const handleSelectAllChange = () => {
+    if (selectAll) {
+      setSelectedProducts([]);
+    } else {
+      setSelectedProducts(data);
+    }
+    setSelectAll(!selectAll);
+  };
+
   const formatCurrency = (value) => {
     return value
       .toLocaleString("vi-VN", {
@@ -26,6 +43,7 @@ const GioHangTable = ({ data, onQuantityChange }) => {
       })
       .replace("₫", "VNĐ");
   };
+
   const handleClickDatHang = () => {
     if (selectedProducts.length > 0) {
       navigate("/xac-nhan-don-hang", {
@@ -36,7 +54,9 @@ const GioHangTable = ({ data, onQuantityChange }) => {
       const newObject = { value: "Bạn cần chọn sản phẩm để đặt hàng!" };
       setResponse(newObject);
     }
+    // console.log(selectedProducts);
   };
+
   const handleQuantityChange = (product, delta) => {
     const newQuantity = product.quantity + delta;
     console.log(newQuantity);
@@ -86,12 +106,20 @@ const GioHangTable = ({ data, onQuantityChange }) => {
         });
     }
   };
+
   return (
     <div className="container mx-auto mt-2 pl-4 pr-4 mb-4">
       <table className="min-w-full bg-white border border-gray-200">
         <thead>
           <tr className="bg-blue-500 text-white">
-            <th className="px-4 py-2 border border-gray-200">Chọn</th>
+            <th className="px-4 py-2 border border-gray-200">
+              <input
+                type="checkbox"
+                checked={selectAll}
+                onChange={handleSelectAllChange}
+                className="w-6 h-6 text-blue-500 rounded focus:ring-blue-500 focus:border-blue-500"
+              />
+            </th>
             <th className="px-4 py-2 border border-gray-200">Ảnh</th>
             <th className="px-4 py-2 border border-gray-200">Tên sản phẩm</th>
             <th className="px-4 py-2 border border-gray-200">Giá</th>
@@ -165,4 +193,5 @@ const GioHangTable = ({ data, onQuantityChange }) => {
     </div>
   );
 };
+
 export default GioHangTable;

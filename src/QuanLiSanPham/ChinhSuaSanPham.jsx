@@ -22,6 +22,9 @@ export default function ChinhSuaSanPham() {
   const [categoryDetailData, setCategoryDetailData] = useState([]);
   const [attributes, setAttributes] = useState([]);
   const [productDetail, setProductDetail] = useState(null);
+  const [fillName, setFillName] = useState(true);
+  const [fillPrice, setFillPrice] = useState(true);
+  const [fillStock, setFillStock] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -162,60 +165,43 @@ export default function ChinhSuaSanPham() {
   }, [selectedCategory, token]);
 
   const handleSave = async () => {
-    const urls = [];
+    if (productName !== "") setFillName(true);
+    else setFillName(false);
 
-    // Lấy URLs từ productDetail.image và so sánh với imagePreviews để xác định các URL cũ cần giữ lại
-    const oldUrls = productDetail.image || [];
-    const remainingUrls = oldUrls.filter((url) => imagePreviews.includes(url));
+    if (price !== "") setFillPrice(true);
+    else setFillPrice(false);
 
-    // Lọc ra các ảnh mới dựa trên thuộc tính `_isNew`
-    const newImages = images.filter((image) => image._isNew);
+    if (quantity !== "") setFillStock(true);
+    else setFillStock(false);
+    if (productName !== "" && price !== "" && quantity !== "") {
+      const urls = [];
 
-    // Tải lên các ảnh mới vào Firebase và lấy URL
-    for (let i = 0; i < newImages.length; i++) {
-      const image = newImages[i];
-      const imageRef = ref(storage, `images/product/${image.name}`);
-      await uploadBytes(imageRef, image);
-      const url = await getDownloadURL(imageRef);
-      urls.push(url);
-    }
+      // Lấy URLs từ productDetail.image và so sánh với imagePreviews để xác định các URL cũ cần giữ lại
+      const oldUrls = productDetail.image || [];
+      const remainingUrls = oldUrls.filter((url) =>
+        imagePreviews.includes(url)
+      );
 
-    // Kết hợp URLs mới với những URLs cũ còn tồn tại
-    const updatedUrls = [...remainingUrls, ...urls];
+      // Lọc ra các ảnh mới dựa trên thuộc tính `_isNew`
+      const newImages = images.filter((image) => image._isNew);
 
-    console.log(updatedUrls);
-    const formData = {
-      productId: productDetail.productId,
-      name: productName,
-      images: updatedUrls,
-      description: productDescription,
-      price: price,
-      stock: quantity,
-      categoryId: selectedCategory,
-      manufacturerId: selectedManufacturer,
-      productDetails: attributes.map((attr) => ({
-        detailId: attr.detailId,
-        name: attr.name,
-        value: attr.value,
-      })),
-    };
-    console.log(formData);
-    // for (let i = 0; i < images.length; i++) {
-    //   const image = images[i];
-    //   const imageRef = ref(storage, `images/product/${image.name}`); // Create a reference to the file in storage
-    //   await uploadBytes(imageRef, image); // Upload the file to the reference
-    //   const url = await getDownloadURL(imageRef); // Get the download URL
-    //   urls.push(url);
-    // }
-    fetch(`api/product-service/employee/product/update-product`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+      // Tải lên các ảnh mới vào Firebase và lấy URL
+      for (let i = 0; i < newImages.length; i++) {
+        const image = newImages[i];
+        const imageRef = ref(storage, `images/product/${image.name}`);
+        await uploadBytes(imageRef, image);
+        const url = await getDownloadURL(imageRef);
+        urls.push(url);
+      }
+
+      // Kết hợp URLs mới với những URLs cũ còn tồn tại
+      const updatedUrls = [...remainingUrls, ...urls];
+
+      console.log(updatedUrls);
+      const formData = {
         productId: productDetail.productId,
         name: productName,
+        images: updatedUrls,
         description: productDescription,
         price: price,
         stock: quantity,
@@ -226,19 +212,41 @@ export default function ChinhSuaSanPham() {
           name: attr.name,
           value: attr.value,
         })),
-        images: updatedUrls,
-      }),
-    })
-      .then((res) => {
-        if (res.status === 200) {
-          navigate("/quan-li-san-pham", {
-            state: { selectedCategory: selectedCategory },
-          });
-        }
+      };
+      console.log(formData);
+      fetch(`api/product-service/employee/product/update-product`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productId: productDetail.productId,
+          name: productName,
+          description: productDescription,
+          price: price,
+          stock: quantity,
+          categoryId: selectedCategory,
+          manufacturerId: selectedManufacturer,
+          productDetails: attributes.map((attr) => ({
+            detailId: attr.detailId,
+            name: attr.name,
+            value: attr.value,
+          })),
+          images: updatedUrls,
+        }),
       })
-      .catch((error) => {
-        console.error("Lỗi khi gọi API:", error);
-      });
+        .then((res) => {
+          if (res.status === 200) {
+            navigate("/quan-li-san-pham", {
+              state: { selectedCategory: selectedCategory },
+            });
+          }
+        })
+        .catch((error) => {
+          console.error("Lỗi khi gọi API:", error);
+        });
+    }
   };
 
   const handleChangeAttribute = (index, value) => {
@@ -319,9 +327,16 @@ export default function ChinhSuaSanPham() {
               type="text"
               placeholder="Nhập tên sản phẩm"
               value={productName}
-              onChange={(e) => setProductName(e.target.value)}
+              onChange={(e) => {
+                setProductName(e.target.value);
+                if (e.target.value.trim() !== "") setFillName(true);
+                else setFillName(false);
+              }}
               required
             />
+            {!fillName && (
+              <h2 className="text-red-500">Vui lòng nhập tên sản phẩm</h2>
+            )}
           </div>
           <div className="flex mb-4">
             <div className="w-1/2 pr-2 relative">
@@ -437,12 +452,19 @@ export default function ChinhSuaSanPham() {
               <input
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 id="price"
-                type="text"
+                type="number"
                 placeholder="Nhập giá"
                 value={price}
-                onChange={(e) => setPrice(e.target.value)}
+                onChange={(e) => {
+                  setPrice(e.target.value);
+                  if (e.target.value !== "") setFillPrice(true);
+                  else setFillPrice(false);
+                }}
                 required
               />
+              {!fillPrice && (
+                <h2 className="text-red-500">Vui lòng giá sản phẩm</h2>
+              )}
             </div>
             <div className="w-1/2 pl-2">
               <label
@@ -454,12 +476,19 @@ export default function ChinhSuaSanPham() {
               <input
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 id="quantity"
-                type="text"
+                type="number"
                 placeholder="Nhập số lượng"
                 value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
+                onChange={(e) => {
+                  setQuantity(e.target.value);
+                  if (e.target.value !== "") setFillStock(true);
+                  else setFillStock(false);
+                }}
                 required
               />
+              {!fillStock && (
+                <h2 className="text-red-500">Vui lòng số lượng</h2>
+              )}
             </div>
           </div>
           <div className="mb-4">

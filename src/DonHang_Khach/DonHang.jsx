@@ -42,6 +42,7 @@ const DonHang = () => {
         if (res.status === 200) {
           res.json().then((data) => {
             setOrders(data);
+            console.log(data);
           });
         }
       })
@@ -53,7 +54,7 @@ const DonHang = () => {
     <div>
       <Header cartCount={cartCountTmp && cartCountTmp.value} />
       <NavBar />
-      <DonHangTable data={orders} />
+      <DonHangTable data={orders} setData={setOrders} />
       <Footer />
     </div>
   );

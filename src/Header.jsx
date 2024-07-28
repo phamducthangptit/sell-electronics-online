@@ -4,9 +4,12 @@ import cart from "./image/cart.png";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
-export default function Header({ cartCount }) {
+import Popup from "./Account/PopupThongTinCaNhan";
+export default function Header({ cartCount, onSearch }) {
   const [userName, setUserName] = useState();
   const [role, setRole] = useState(null);
+  const [isPopupOpen, setPopupOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   useEffect(() => {
@@ -41,13 +44,30 @@ export default function Header({ cartCount }) {
     localStorage.clear();
   };
   const handleClickLogo = () => {
-    navigate("/");
+    if (role === "GUEST") {
+      navigate("/");
+    }
+    if (role === "EMPLOYEE") navigate("/quan-li-don-hang");
+    if (role === "ADMIN") navigate("/quan-li-nhan-vien");
   };
   const handelClickDoiMatKhau = () => {
     navigate("/doi-mat-khau");
   };
   const handleClickCart = () => {
     navigate("/gio-hang");
+  };
+  const handleClickThongTinCaNhan = () => {
+    if (userName !== null) {
+      setPopupOpen(!isPopupOpen);
+    }
+  };
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    onSearch(searchQuery);
   };
   return (
     <div>
@@ -91,27 +111,31 @@ export default function Header({ cartCount }) {
           className="w-40 h-auto mb-4 md:mb-0 md:mr-8 flex-shrink-0 cursor-pointer"
           onClick={handleClickLogo}
         />
-        <form className="flex items-center border-2 border-blue-500 rounded overflow-hidden flex-grow max-w-lg mb-4 md:mb-0 md:ml-8">
-          <select className="border-none p-2 bg-gray-100 text-gray-700 focus:outline-none flex-grow">
-            <option value="all-categories">All Categories</option>
-            <option value="category1">Category 1</option>
-            <option value="category2">Category 2</option>
-            <option value="category3">Category 3</option>
-          </select>
-          <input
-            type="text"
-            placeholder="Search for products"
-            className="flex-grow border-none p-2 bg-gray-100 text-gray-700 focus:outline-none w-full"
-          />
-          <button
-            type="submit"
-            className="bg-blue-500 text-white p-2 whitespace-nowrap"
+        {role !== "EMPLOYEE" && role !== "ADMIN" && (
+          <form
+            className="flex items-center border-2 border-blue-500 rounded overflow-hidden flex-grow max-w-lg mb-4 md:mb-0 md:ml-8"
+            onSubmit={handleSearchSubmit}
           >
-            Tìm kiếm
-          </button>
-        </form>
+            <input
+              type="text"
+              placeholder="Tìm kiếm sản phẩm"
+              className="flex-grow border-none p-2 bg-gray-100 text-gray-700 focus:outline-none w-full"
+              value={searchQuery}
+              onChange={handleSearchChange}
+            />
+            <button
+              type="submit"
+              className="bg-blue-500 text-white p-2 whitespace-nowrap"
+            >
+              Tìm kiếm
+            </button>
+          </form>
+        )}
         <div className="flex items-center">
-          <div className="mr-4 flex items-center">
+          <div
+            className="mr-4 flex items-center"
+            onClick={() => handleClickThongTinCaNhan()}
+          >
             <img src={account} alt="" className="w-9" />
             <h1 className="cursor-pointer">{userName}</h1>
           </div>
@@ -130,6 +154,11 @@ export default function Header({ cartCount }) {
           )}
         </div>
       </div>
+      <Popup
+        show={isPopupOpen}
+        onClose={() => setPopupOpen(false)}
+        item={userName}
+      />
     </div>
   );
 }

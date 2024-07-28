@@ -21,6 +21,9 @@ export default function ThemSanPham() {
   const token = localStorage.getItem("token");
   const [categoryDetailData, setCategoryDetailData] = useState([]);
   const [attributes, setAttributes] = useState([]);
+  const [fillName, setFillName] = useState(true);
+  const [fillPrice, setFillPrice] = useState(true);
+  const [fillStock, setFillStock] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -118,50 +121,60 @@ export default function ThemSanPham() {
   }, [selectedCategory, token]);
 
   const handleSave = async () => {
-    const urls = [];
+    if (productName !== "") setFillName(true);
+    else setFillName(false);
 
-    for (let i = 0; i < images.length; i++) {
-      const image = images[i];
-      const imageRef = ref(storage, `images/product/${image.name}`); // Create a reference to the file in storage
-      await uploadBytes(imageRef, image); // Upload the file to the reference
-      const url = await getDownloadURL(imageRef); // Get the download URL
-      urls.push(url);
-    }
+    if (price !== "") setFillPrice(true);
+    else setFillPrice(false);
 
-    fetch(`api/product-service/employee/product/add-new-product`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: productName,
-        description: productDescription,
-        price: price,
-        stock: quantity,
-        categoryId: selectedCategory,
-        manufacturerId: selectedManufacturer,
-        productDetails: attributes.map((attr) => ({
-          detailId: attr.detailId,
-          name: attr.name,
-          value: attr.value,
-        })),
-        images: urls,
-      }),
-    })
-      .then((res) => {
-        if (res.status === 200) {
-          res.json().then((data) => {
-            console.log(data);
-            navigate("/quan-li-san-pham", {
-              state: { selectedCategory: selectedCategory },
-            });
-          });
+    if (quantity !== "") setFillStock(true);
+    else setFillStock(false);
+    if (productName !== "" && price !== "" && quantity !== "") {
+      const urls = [];
+      if (images) {
+        for (let i = 0; i < images.length; i++) {
+          const image = images[i];
+          const imageRef = ref(storage, `images/product/${image.name}`); // Create a reference to the file in storage
+          await uploadBytes(imageRef, image); // Upload the file to the reference
+          const url = await getDownloadURL(imageRef); // Get the download URL
+          urls.push(url);
         }
+      }
+      fetch(`api/product-service/employee/product/add-new-product`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: productName,
+          description: productDescription,
+          price: price,
+          stock: quantity,
+          categoryId: selectedCategory,
+          manufacturerId: selectedManufacturer,
+          productDetails: attributes.map((attr) => ({
+            detailId: attr.detailId,
+            name: attr.name,
+            value: attr.value,
+          })),
+          images: urls,
+        }),
       })
-      .catch((error) => {
-        console.error("Lỗi khi gọi API:", error);
-      });
+        .then((res) => {
+          if (res.status === 200) {
+            res.json().then((data) => {
+              console.log(data);
+              navigate("/quan-li-san-pham", {
+                state: { selectedCategory: selectedCategory },
+              });
+            });
+          }
+        })
+        .catch((error) => {
+          console.error("Lỗi khi gọi API:", error);
+        });
+    }
   };
 
   const handleChangeAttribute = (index, value) => {
@@ -247,9 +260,16 @@ export default function ThemSanPham() {
               type="text"
               placeholder="Nhập tên sản phẩm"
               value={productName}
-              onChange={(e) => setProductName(e.target.value)}
+              onChange={(e) => {
+                setProductName(e.target.value);
+                if (e.target.value.trim() !== "") setFillName(true);
+                else setFillName(false);
+              }}
               required
             />
+            {!fillName && (
+              <h2 className="text-red-500">Vui lòng nhập tên sản phẩm</h2>
+            )}
           </div>
           <div className="flex mb-4">
             <div className="w-1/2 pr-2 relative">
@@ -370,8 +390,15 @@ export default function ThemSanPham() {
                 type="number"
                 placeholder="Nhập giá bán"
                 value={price}
-                onChange={(e) => setPrice(e.target.value)}
+                onChange={(e) => {
+                  setPrice(e.target.value);
+                  if (e.target.value !== "") setFillPrice(true);
+                  else setFillPrice(false);
+                }}
               />
+              {!fillPrice && (
+                <h2 className="text-red-500">Vui lòng giá sản phẩm</h2>
+              )}
             </div>
             <div className="w-1/2 pl-2">
               <label
@@ -386,8 +413,15 @@ export default function ThemSanPham() {
                 type="number"
                 placeholder="Nhập số lượng"
                 value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
+                onChange={(e) => {
+                  setQuantity(e.target.value);
+                  if (e.target.value !== "") setFillStock(true);
+                  else setFillStock(false);
+                }}
               />
+              {!fillStock && (
+                <h2 className="text-red-500">Vui lòng số lượng</h2>
+              )}
             </div>
           </div>
           <div className="mb-4">

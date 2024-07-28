@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
-const Popup = ({ show, onClose, item, onSave }) => {
+const Popup = ({ show, onClose, item }) => {
   const token = localStorage.getItem("token");
-  const [errorEmail, setErrorEmail] = useState();
+  //   const [dataInformation, setDataInformation] = useState(null);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -11,50 +11,61 @@ const Popup = ({ show, onClose, item, onSave }) => {
     phoneNumber: "",
   });
 
-  useEffect(() => {
-    setErrorEmail(null);
-    setFormData({
-      firstName: (item && item.firstName) || "",
-      lastName: (item && item.lastName) || "",
-      email: (item && item.email) || "",
-      address: (item && item.address) || "",
-      phoneNumber: (item && item.phoneNumber) || "",
-    });
-  }, [show, item]);
-
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name === "email") setErrorEmail(null);
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
   };
-
-  const handleSave = () => {
-    fetch(`api/information-service/admin/update-information-employee`, {
+  useEffect(() => {
+    if (show) {
+      fetch(`api/information-service/user/get-information?user-name=${item}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+        .then((res) => {
+          if (res.status === 200) {
+            res.json().then((data) => {
+              console.log(data);
+              //   setDataInformation(data);
+              setFormData({
+                firstName: data.firstName || "",
+                lastName: data.lastName || "",
+                email: data.email || "",
+                address: data.address || "",
+                phoneNumber: data.phone || "",
+              });
+            });
+          }
+        })
+        .catch((error) => {
+          console.error("Lỗi khi gọi API:", error);
+        });
+    }
+  }, [token, show, item]);
+  const handleClickSaveInfomation = () => {
+    fetch(`api/information-service/user/update-information`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        id: item.userId,
+        userName: item,
         lastName: formData.lastName,
         firstName: formData.firstName,
         email: formData.email,
         address: formData.address,
-        phoneNumber: formData.phoneNumber,
+        phone: formData.phoneNumber,
       }),
     })
       .then((res) => {
         if (res.status === 200) {
-          onSave(formData); // lưu thành công
           onClose();
-        } else if (res.status === 400) {
-          res.json().then((data) => {
-            setErrorEmail(data.value);
-          });
         }
       })
       .catch((error) => {
@@ -72,9 +83,7 @@ const Popup = ({ show, onClose, item, onSave }) => {
       ></div>
       <div className="bg-blue-50 rounded-lg shadow-lg p-6 z-10 w-full max-w-md">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-blue-700">
-            Chỉnh sửa thông tin
-          </h2>
+          <h2 className="text-xl font-bold text-blue-700">Thông tin cá nhân</h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700"
@@ -84,13 +93,13 @@ const Popup = ({ show, onClose, item, onSave }) => {
         </div>
         <div className="space-y-4">
           <div>
-            <label className="block text-blue-700">Họ:</label>
+            <label className="block text-blue-700">Họ: </label>
             <input
               type="text"
               name="firstName"
-              value={formData.firstName}
-              onChange={handleChange}
+              defaultValue={formData.firstName}
               className="w-full p-2 border border-blue-300 rounded focus:outline-none focus:ring focus:border-blue-500"
+              onChange={handleChange}
             />
           </div>
           <div>
@@ -98,9 +107,9 @@ const Popup = ({ show, onClose, item, onSave }) => {
             <input
               type="text"
               name="lastName"
-              value={formData.lastName}
-              onChange={handleChange}
+              defaultValue={formData.lastName}
               className="w-full p-2 border border-blue-300 rounded focus:outline-none focus:ring focus:border-blue-500"
+              onChange={handleChange}
             />
           </div>
           <div>
@@ -108,20 +117,19 @@ const Popup = ({ show, onClose, item, onSave }) => {
             <input
               type="email"
               name="email"
-              value={formData.email}
-              onChange={handleChange}
+              defaultValue={formData.email}
               className="w-full p-2 border border-blue-300 rounded focus:outline-none focus:ring focus:border-blue-500"
+              readOnly
             />
-            {errorEmail && <h2 className="text-red-500">{errorEmail}</h2>}
           </div>
           <div>
             <label className="block text-blue-700">Địa chỉ:</label>
             <input
               type="text"
               name="address"
-              value={formData.address}
-              onChange={handleChange}
+              defaultValue={formData.address}
               className="w-full p-2 border border-blue-300 rounded focus:outline-none focus:ring focus:border-blue-500"
+              onChange={handleChange}
             />
           </div>
           <div>
@@ -129,16 +137,16 @@ const Popup = ({ show, onClose, item, onSave }) => {
             <input
               type="text"
               name="phoneNumber"
-              value={formData.phoneNumber}
-              onChange={handleChange}
+              defaultValue={formData.phoneNumber}
               className="w-full p-2 border border-blue-300 rounded focus:outline-none focus:ring focus:border-blue-500"
+              onChange={handleChange}
             />
           </div>
         </div>
         <div className="flex justify-end mt-6">
           <button
-            onClick={handleSave}
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            onClick={handleClickSaveInfomation}
           >
             Lưu
           </button>

@@ -15,8 +15,8 @@ const Popup = ({ show, onClose, onSave }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name === "name") setFillName(value !== "" ? true : false);
-    if (name === "country") setFillCountry(value !== "" ? true : false);
+    if (name === "name") setFillName(value.trim() !== "" ? true : false);
+    if (name === "country") setFillCountry(value.trim() !== "" ? true : false);
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
@@ -43,15 +43,17 @@ const Popup = ({ show, onClose, onSave }) => {
   }, [show]);
 
   const handleSave = async () => {
-    setFillName(formData.name === "" ? false : true);
-    setFillCountry(formData.country === "" ? false : true);
-    const urls = [];
-    const imageRef = ref(storage, `images/manufacturer/${imageFile.name}`); // Create a reference to the file in storage
-    await uploadBytes(imageRef, imageFile); // Upload the file to the reference
-    const url = await getDownloadURL(imageRef); // Get the download URL
-    urls.push(url);
+    setFillName(formData.name.trim() === "" ? false : true);
+    setFillCountry(formData.country.trim() === "" ? false : true);
 
-    if (formData.name !== "" && formData.country !== "") {
+    if (formData.name.trim() !== "" && formData.country.trim() !== "") {
+      const urls = [];
+      if (imageFile) {
+        const imageRef = ref(storage, `images/manufacturer/${imageFile.name}`); // Create a reference to the file in storage
+        await uploadBytes(imageRef, imageFile); // Upload the file to the reference
+        const url = await getDownloadURL(imageRef); // Get the download URL
+        urls.push(url);
+      }
       fetch(`api/product-service/employee/manufacturer/add-manufacturer`, {
         method: "POST",
         headers: {

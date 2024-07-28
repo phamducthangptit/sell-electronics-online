@@ -4,22 +4,32 @@ import Header from "../Header";
 import Footer from "../Footer";
 import NavBar from "../NavBar";
 import Popup from "./Popup";
+import ReactStars from "react-rating-stars-component";
 
 const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const location = useLocation();
-  const [thumbnails, setThumbnials] = useState([]);
+  const [thumbnails, setThumbnails] = useState([]);
   const [details, setDetails] = useState([]);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState("details");
   const [reviews, setReviews] = useState([]);
+  const [description, setDescription] = useState(null);
   const [cartCountTmp, setCartCountTmp] = useState(null);
   const token = localStorage.getItem("token");
   const userName = localStorage.getItem("username");
   const [isPopup, setPopupOpen] = useState(false);
   const [response, setResponse] = useState(null);
   const [countSales, setCountSales] = useState();
+  const [activeReview, setActiveReview] = useState(false);
+  const [reviewText, setReviewText] = useState(""); // State to hold the review text
+  const [showReviewBox, setShowReviewBox] = useState(false); // State to control review box visibility
+  const [rating, setRating] = useState(5);
+  const [orderId, setOrderId] = useState();
+  const [nameProduct, setNameProduct] = useState();
+  const [price, setPrice] = useState();
+  const [stock, setStock] = useState();
 
   const handleQuantityChange = (amount) => {
     setQuantity((prevQuantity) => Math.max(1, prevQuantity + amount));
@@ -28,8 +38,10 @@ const ProductDetail = () => {
   useEffect(() => {
     if (location.state && location.state.product) {
       setProduct(location.state.product);
+      setNameProduct(location.state.product.name);
       setSelectedImage(location.state.product.image); // Set the default selected image
-
+      setActiveReview(location.state.product.activeReview);
+      setOrderId(location.state.product.orderId);
       /// call api
       fetch(
         `api/product-service/guest/product/get-product-detail?id=${location.state.product.productId}`,
@@ -43,10 +55,15 @@ const ProductDetail = () => {
         .then((res) => {
           if (res.status === 200) {
             res.json().then((data) => {
-              setThumbnials(data.image);
+              setThumbnails(data.image);
               setDetails(data.listDetail);
               setReviews(data.listReview);
               setCountSales(data.countSales);
+              setDescription(data.description);
+              setNameProduct(data.name);
+              setPrice(data.price);
+              setStock(data.stock);
+              console.log(data);
             });
           }
         })
@@ -94,6 +111,7 @@ const ProductDetail = () => {
       console.log("abc");
     }
   };
+
   const callAPIGetCartCount = () => {
     fetch(`api/product-service/guest/cart/count-product?username=${userName}`, {
       method: "GET",
@@ -114,6 +132,48 @@ const ProductDetail = () => {
       });
   };
 
+  const handleOpenReviewBox = () => {
+    setShowReviewBox(true);
+  };
+  const formatCurrency = (value) => {
+    const numberValue = parseFloat(value);
+    return numberValue
+      .toLocaleString("vi-VN", { style: "currency", currency: "VND" })
+      .replace("₫", "VNĐ");
+  };
+
+  const handleReviewSubmit = (productId) => {
+    fetch(`api/product-service/guest/review/add-review`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userName: userName,
+        productId: productId,
+        ratting: rating,
+        comment: reviewText,
+        orderId: orderId,
+      }),
+    })
+      .then((res) => {
+        if (res.status === 200) {
+          res.json().then((data) => {
+            console.log(data);
+            setReviews([...reviews, data]);
+            setActiveReview(false);
+          });
+        }
+      })
+      .catch((error) => {
+        console.error("Lỗi khi gọi API:", error);
+      });
+    setReviewText("");
+    setShowReviewBox(false);
+    setRating(5);
+  };
+
   if (!product) {
     return <div>Loading...</div>;
   }
@@ -127,7 +187,7 @@ const ProductDetail = () => {
           <div className="border-2 border-gray-300 p-2">
             <img
               src={selectedImage}
-              alt={product.name}
+              alt={nameProduct}
               className="w-[550px] h-auto"
             />
           </div>
@@ -137,25 +197,29 @@ const ProductDetail = () => {
                 key={index}
                 src={thumbnail}
                 alt={`thumbnail-${index}`}
-                className={`w-20 h-20 cursor-pointer border-2 p-1 ${selectedImage === thumbnail ? "border-blue-500" : "border-gray-300"}`}
+                className={`w-20 h-20 cursor-pointer border-2 p-1 ${
+                  selectedImage === thumbnail
+                    ? "border-blue-500"
+                    : "border-gray-300"
+                }`}
                 onClick={() => setSelectedImage(thumbnail)}
               />
             ))}
           </div>
         </div>
         <div className="md:w-1/2 md:pl-6 mr-8">
-          <h1 className="text-2xl font-bold">{product.name}</h1>
+          <h1 className="text-2xl font-bold">{nameProduct}</h1>
           <div className="flex items-center mt-2">
             <span className="text-gray-600">{reviews.length} Đánh giá</span>
             <span className="ml-2 px-2 py-1 bg-green-200 text-green-800 rounded">
-              Còn {product.stock} sản phẩm
+              Còn {product.stock || stock} sản phẩm
             </span>
             <span className="ml-2 px-2 py-1 bg-green-200 text-green-800 rounded">
               Lượt bán: {countSales}
             </span>
           </div>
           <p className="text-3xl font-bold mt-4 text-red-600">
-            {product.price}
+            {product.price || (price && formatCurrency(price))}
           </p>
           <ul className="list-disc ml-6 mt-4 text-gray-700">
             {details.map((detail, index) => (
@@ -199,13 +263,21 @@ const ProductDetail = () => {
       <div className="m-6">
         <div className="flex border-b border-gray-300">
           <button
-            className={`px-4 py-2 ${activeTab === "details" ? "bg-blue-500 text-white rounded-t-lg" : "bg-gray-100 text-gray-700"}`}
+            className={`px-4 py-2 ${
+              activeTab === "details"
+                ? "bg-blue-500 text-white rounded-t-lg"
+                : "bg-gray-100 text-gray-700"
+            }`}
             onClick={() => setActiveTab("details")}
           >
             Mô tả sản phẩm
           </button>
           <button
-            className={`px-4 py-2 ml-2 ${activeTab === "reviews" ? "bg-blue-500 text-white rounded-t-lg" : "bg-gray-100 text-gray-700"}`}
+            className={`px-4 py-2 ml-2 ${
+              activeTab === "reviews"
+                ? "bg-blue-500 text-white rounded-t-lg"
+                : "bg-gray-100 text-gray-700"
+            }`}
             onClick={() => setActiveTab("reviews")}
           >
             Đánh giá ({reviews.length})
@@ -214,7 +286,7 @@ const ProductDetail = () => {
         <div className="p-4 border border-gray-300 rounded-b-lg">
           {activeTab === "details" && (
             <div>
-              <p>{product.description}</p>
+              <p>{description}</p>
             </div>
           )}
           {activeTab === "reviews" && (
@@ -235,16 +307,50 @@ const ProductDetail = () => {
                   <p className="mt-2">{review.comment}</p>
                 </div>
               ))}
+              {activeReview && (
+                <button
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 mt-4 rounded"
+                  onClick={handleOpenReviewBox}
+                >
+                  Viết đánh giá
+                </button>
+              )}
+              {showReviewBox && (
+                <div className="mt-4">
+                  <div className="mt-2">
+                    <ReactStars
+                      count={5}
+                      onChange={setRating}
+                      size={24}
+                      activeColor="#ffd700"
+                      value={rating}
+                    />
+                  </div>
+                  <textarea
+                    value={reviewText}
+                    onChange={(e) => setReviewText(e.target.value)}
+                    className="w-full h-32 border border-gray-300 rounded p-2"
+                    placeholder="Nhập đánh giá của bạn..."
+                  ></textarea>
+
+                  <button
+                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 mt-2 rounded"
+                    onClick={() => handleReviewSubmit(product.productId)}
+                  >
+                    Gửi đánh giá
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
       </div>
-      <Popup
-        show={isPopup}
-        onClose={() => setPopupOpen(false)}
-        object={response}
-      />
       <Footer />
+      <Popup
+        message={response && response.value}
+        isPopup={isPopup}
+        setPopupOpen={setPopupOpen}
+      />
     </div>
   );
 };

@@ -3,6 +3,7 @@ import Header from "../Header";
 import Footer from "../Footer";
 import NavBar from "../NavBar";
 import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const DonHangDetail = () => {
   const token = localStorage.getItem("token");
@@ -10,6 +11,7 @@ const DonHangDetail = () => {
   const location = useLocation();
   const [cartCountTmp, setCartCountTmp] = useState(null);
   const [orderDetail, setOrderDetail] = useState([]);
+  const navigate = useNavigate();
   useEffect(() => {
     fetch(`api/product-service/guest/cart/count-product?username=${userName}`, {
       method: "GET",
@@ -52,6 +54,15 @@ const DonHangDetail = () => {
         console.error("Lỗi khi gọi API:", error);
       });
   }, [location.state, token]);
+  const handleCliCkReview = (orderDetail) => {
+    const product = {
+      productId: orderDetail.productId,
+      image: orderDetail.image,
+      activeReview: true,
+      orderId: location.state.order.orderId,
+    };
+    navigate("/chi-tiet-san-pham", { state: { product: product } });
+  };
   return (
     <div>
       <Header cartCount={cartCountTmp && cartCountTmp.value} />
@@ -68,7 +79,7 @@ const DonHangDetail = () => {
             </tr>
           </thead>
           <tbody>
-            {orderDetail.map((orderDetail, index) => (
+            {orderDetail.map((detail, index) => (
               <tr key={index} className="even:bg-gray-100">
                 <td className="border px-4 py-2">
                   <div className="flex justify-center items-center">
@@ -77,19 +88,18 @@ const DonHangDetail = () => {
                 </td>
                 <td className="border px-4 py-2">
                   <div className="flex justify-center items-center">
-                    <img src={orderDetail.image} alt="" className="w-20 h-20" />
+                    <img src={detail.image} alt="" className="w-20 h-20" />
                   </div>
                 </td>
-                <td className="border px-4 py-2 text-center">
-                  {orderDetail.stock}
-                </td>
-                <td className="border px-4 py-2">{orderDetail.price}</td>
+                <td className="border px-4 py-2 text-center">{detail.stock}</td>
+                <td className="border px-4 py-2">{detail.price}</td>
                 <td className="border px-4 py-2">
-                  {orderDetail.checkStatus === 1 && (
+                  {detail.checkReview === 1 && (
                     <div className="flex justify-center mt-4">
                       <button
-                        type="submit"
+                        type="button"
                         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                        onClick={() => handleCliCkReview(detail)}
                       >
                         Đánh giá
                       </button>

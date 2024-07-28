@@ -12,6 +12,9 @@ const XacNhanDonHang = () => {
   const [cartCountTmp, setCartCountTmp] = useState(null);
   const location = useLocation();
   const [selectedProducts, setSelectedProducts] = useState([]);
+  const [fillName, setFillName] = useState(true);
+  const [fillAddress, setFillAddress] = useState(true);
+  const [fillPhone, setFillPhone] = useState(true);
   // State để lưu phương thức thanh toán
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [formData, setFormData] = useState({
@@ -21,6 +24,18 @@ const XacNhanDonHang = () => {
   });
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === "name") {
+      if (value.trim() === "") setFillName(false);
+      else setFillName(true);
+    }
+    if (name === "address") {
+      if (value.trim() === "") setFillAddress(false);
+      else setFillAddress(true);
+    }
+    if (name === "phone") {
+      if (value.trim() === "") setFillPhone(false);
+      else setFillPhone(true);
+    }
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
@@ -62,10 +77,14 @@ const XacNhanDonHang = () => {
     setSelectedProducts(location.state.selectedProducts);
   }, [location.state]);
   const handleClickDatHang = () => {
-    console.log(userName);
-    if (paymentMethod === "cod") {
-      console.log(selectedProducts);
-      // call api lưu vào db
+    if (formData.name.trim() === "") setFillName(false);
+    if (formData.address.trim() === "") setFillAddress(false);
+    if (formData.phone.trim() === "") setFillPhone(false);
+    if (
+      formData.name.trim() !== "" &&
+      formData.address.trim() !== "" &&
+      formData.phone.trim() !== ""
+    ) {
       fetch(`api/product-service/guest/order/add-new-order`, {
         method: "POST",
         headers: {
@@ -83,7 +102,31 @@ const XacNhanDonHang = () => {
       })
         .then((res) => {
           if (res.status === 200) {
-            navigate("/don-hang");
+            res.json().then((data) => {
+              if (paymentMethod !== "cod") {
+                fetch(`api/product-service/guest/payment/create-payment`, {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    orderId: data.value,
+                    amount: totalAmount,
+                  }),
+                })
+                  .then((res) => {
+                    if (res.status === 200) {
+                      res.json().then((data) => {
+                        window.location.href = data.url;
+                      });
+                    }
+                  })
+                  .catch((error) => {
+                    console.error("Lỗi khi gọi API:", error);
+                  });
+              } else navigate("/don-hang");
+            });
           }
         })
         .catch((error) => {
@@ -160,6 +203,9 @@ const XacNhanDonHang = () => {
               onChange={handleChange}
               className="mt-1 block w-full border border-gray-300 rounded-md p-2"
             />
+            {!fillName && (
+              <h2 className="text-red-500">Vui lòng nhập tên người nhận</h2>
+            )}
           </div>
 
           <div>
@@ -174,6 +220,9 @@ const XacNhanDonHang = () => {
               onChange={handleChange}
               className="mt-1 block w-full border border-gray-300 rounded-md p-2"
             />
+            {!fillAddress && (
+              <h2 className="text-red-500">Vui lòng nhập địa chỉ người nhận</h2>
+            )}
           </div>
           <div>
             <label htmlFor="phone" className="block text-gray-700">
@@ -187,6 +236,11 @@ const XacNhanDonHang = () => {
               onChange={handleChange}
               className="mt-1 block w-full border border-gray-300 rounded-md p-2"
             />
+            {!fillPhone && (
+              <h2 className="text-red-500">
+                Vui lòng nhập số điện thoại người nhận
+              </h2>
+            )}
           </div>
           <div>
             <label htmlFor="payment-method" className="block text-gray-700">
