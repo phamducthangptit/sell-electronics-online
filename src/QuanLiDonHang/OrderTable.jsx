@@ -11,6 +11,7 @@ const OrderTable = ({ data, setOrderData }) => {
         },
         body: JSON.stringify({
           orderId: orderId,
+          type: 1,
         }),
       })
         .then((res) => {

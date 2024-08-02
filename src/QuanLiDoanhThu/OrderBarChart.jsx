@@ -43,7 +43,8 @@ const OrderBarChart = ({ apiEndpoint, title }) => {
     const colors = {
       Mới: "rgba(75, 192, 192, 0.4)",
       "Đã xác nhận": "rgba(255, 159, 64, 0.4)",
-      "Hoàn thành": "rgba(255, 99, 132, 0.4)",
+      "Hoàn thành": "rgba(135, 206, 250, 0.4)",
+      Hủy: "rgba(255, 99, 132, 0.4)",
     };
     return border ? colors[status].replace("0.4", "1") : colors[status];
   };

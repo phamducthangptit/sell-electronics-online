@@ -1,7 +1,7 @@
 import logo from "./image/logo.png";
 import account from "./image/account.png";
 import cart from "./image/cart.png";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import Popup from "./Account/PopupThongTinCaNhan";
@@ -11,6 +11,7 @@ export default function Header({ cartCount, onSearch }) {
   const [isPopupOpen, setPopupOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
   const token = localStorage.getItem("token");
   useEffect(() => {
     setUserName(localStorage.getItem("username"));
@@ -111,26 +112,28 @@ export default function Header({ cartCount, onSearch }) {
           className="w-40 h-auto mb-4 md:mb-0 md:mr-8 flex-shrink-0 cursor-pointer"
           onClick={handleClickLogo}
         />
-        {role !== "EMPLOYEE" && role !== "ADMIN" && (
-          <form
-            className="flex items-center border-2 border-blue-500 rounded overflow-hidden flex-grow max-w-lg mb-4 md:mb-0 md:ml-8"
-            onSubmit={handleSearchSubmit}
-          >
-            <input
-              type="text"
-              placeholder="Tìm kiếm sản phẩm"
-              className="flex-grow border-none p-2 bg-gray-100 text-gray-700 focus:outline-none w-full"
-              value={searchQuery}
-              onChange={handleSearchChange}
-            />
-            <button
-              type="submit"
-              className="bg-blue-500 text-white p-2 whitespace-nowrap"
+        {location.pathname === "/" &&
+          role !== "EMPLOYEE" &&
+          role !== "ADMIN" && (
+            <form
+              className="flex items-center border-2 border-blue-500 rounded overflow-hidden flex-grow max-w-lg mb-4 md:mb-0 md:ml-8"
+              onSubmit={handleSearchSubmit}
             >
-              Tìm kiếm
-            </button>
-          </form>
-        )}
+              <input
+                type="text"
+                placeholder="Tìm kiếm sản phẩm"
+                className="flex-grow border-none p-2 bg-gray-100 text-gray-700 focus:outline-none w-full"
+                value={searchQuery}
+                onChange={handleSearchChange}
+              />
+              <button
+                type="submit"
+                className="bg-blue-500 text-white p-2 whitespace-nowrap"
+              >
+                Tìm kiếm
+              </button>
+            </form>
+          )}
         <div className="flex items-center">
           <div
             className="mr-4 flex items-center"

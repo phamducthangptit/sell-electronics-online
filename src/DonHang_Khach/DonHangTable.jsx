@@ -1,5 +1,4 @@
 import detail from "../image/detail.png";
-import invoice from "../image/invoice.svg";
 import { useNavigate } from "react-router-dom";
 const DonHangTable = ({ data, setData }) => {
   const token = localStorage.getItem("token");
@@ -17,6 +16,7 @@ const DonHangTable = ({ data, setData }) => {
         },
         body: JSON.stringify({
           orderId: orderId,
+          type: 1,
         }),
       })
         .then((res) => {
@@ -28,6 +28,41 @@ const DonHangTable = ({ data, setData }) => {
                     checkStatus: 0,
                     status: "Hoàn thành",
                     statusPayment: 1,
+                  }
+                : order
+            );
+            setData(updatedData);
+          }
+        })
+        .catch((error) => {
+          console.error("Lỗi khi gọi API:", error);
+        });
+    } catch (error) {
+      console.error("Error confirming order:", error);
+    }
+  };
+  const handleConfirmCancelOrder = async (orderId) => {
+    try {
+      fetch(`api/product-service/guest/order/update-status-order`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          orderId: orderId,
+          type: 2,
+        }),
+      })
+        .then((res) => {
+          if (res.status === 200) {
+            const updatedData = data.map((order) =>
+              order.orderId === orderId
+                ? {
+                    ...order,
+                    checkStatus: 0,
+                    status: "Hủy",
+                    statusPayment: 0,
                   }
                 : order
             );
@@ -97,13 +132,15 @@ const DonHangTable = ({ data, setData }) => {
                     onClick={() => handleClickXemChiTietDonHang(order)}
                   />
                 </div>
-                {order.checkStatusInvoice === 1 && (
-                  <div className="flex justify-center items-center">
-                    <img
-                      src={invoice}
-                      alt=""
-                      className="w-7 cursor-pointer mt-4"
-                    />
+                {order.status === "Mới" && (
+                  <div className="flex justify-center mt-4">
+                    <button
+                      type="submit"
+                      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline whitespace-nowrap"
+                      onClick={() => handleConfirmCancelOrder(order.orderId)}
+                    >
+                      Hủy đơn hàng
+                    </button>
                   </div>
                 )}
                 {order.checkStatus === 1 && (

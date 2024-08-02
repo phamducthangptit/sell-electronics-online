@@ -5,10 +5,13 @@ import OrderTable from "./OrderTable";
 export default function QuanLiDonHang() {
   const token = localStorage.getItem("token");
   const [orderData, setOrderData] = useState([]);
+  const [searchQuery, setSearchQuery] = useState();
+  const [fullData, setFullData] = useState([]);
   const typeOrders = [
     { id: 1, value: "Mới" },
     { id: 2, value: "Đã xác nhận" },
     { id: 3, value: "Hoàn thành" },
+    { id: 4, value: "Hủy" },
   ];
   const [selectedType, setSelectedType] = useState(typeOrders[0].value);
 
@@ -31,6 +34,7 @@ export default function QuanLiDonHang() {
         if (res.status === 200) {
           res.json().then((data) => {
             setOrderData(data);
+            setFullData(data);
             console.log(data);
           });
         }
@@ -39,6 +43,18 @@ export default function QuanLiDonHang() {
         console.error("Lỗi khi gọi API:", error);
       });
   }, [selectedType, token]);
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchQuery === "") {
+      setOrderData(fullData);
+    } else {
+      const filteredData = fullData.filter((item) =>
+        item.phone.includes(searchQuery)
+      );
+      setOrderData(filteredData);
+    }
+  };
 
   return (
     <div>
@@ -57,6 +73,26 @@ export default function QuanLiDonHang() {
               </option>
             ))}
           </select>
+        </div>
+        <div className="flex justify-end w-auto">
+          <form
+            className="flex items-center border-2 border-blue-500 rounded overflow-hidden"
+            onSubmit={handleSearchSubmit}
+          >
+            <input
+              type="number"
+              placeholder="Nhập SDT để tìm kiếm"
+              className="w-48 border-none p-2 bg-gray-100 text-gray-700 focus:outline-none"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <button
+              type="submit"
+              className="bg-blue-500 text-white p-2 whitespace-nowrap"
+            >
+              Tìm kiếm
+            </button>
+          </form>
         </div>
       </div>
       <OrderTable data={orderData} setOrderData={setOrderData} />

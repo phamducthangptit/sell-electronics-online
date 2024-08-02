@@ -58,7 +58,6 @@ export default function QuanLiSanPham() {
         if (res.status === 200) {
           res.json().then((data) => {
             setProductData(data);
-            // setSelectedCategory(data[0].categoryId);
             console.log(data);
           });
         }
