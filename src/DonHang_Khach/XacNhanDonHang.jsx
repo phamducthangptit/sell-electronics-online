@@ -5,9 +5,11 @@ import defaultproduct from "../image/defaultproduct.jpg";
 import { useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Popup from "../HomePage/Popup";
 const XacNhanDonHang = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  const [isPopup, setPopupOpen] = useState(false);
   const userName = localStorage.getItem("username");
   const [cartCountTmp, setCartCountTmp] = useState(null);
   const location = useLocation();
@@ -15,6 +17,7 @@ const XacNhanDonHang = () => {
   const [fillName, setFillName] = useState(true);
   const [fillAddress, setFillAddress] = useState(true);
   const [fillPhone, setFillPhone] = useState(true);
+  const [response, setResponse] = useState(null);
   // State để lưu phương thức thanh toán
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [formData, setFormData] = useState({
@@ -101,6 +104,7 @@ const XacNhanDonHang = () => {
         }),
       })
         .then((res) => {
+          // đủ số lượng để đặt
           if (res.status === 200) {
             res.json().then((data) => {
               if (paymentMethod !== "cod") {
@@ -126,6 +130,13 @@ const XacNhanDonHang = () => {
                     console.error("Lỗi khi gọi API:", error);
                   });
               } else navigate("/don-hang");
+            });
+          }
+          // có sản phẩm bị hết
+          else if (res.status === 409) {
+            res.json().then((data) => {
+              setResponse(data);
+              setPopupOpen(true);
             });
           }
         })
@@ -266,6 +277,11 @@ const XacNhanDonHang = () => {
           </button>
         </div>
       </div>
+      <Popup
+        show={isPopup}
+        onClose={() => setPopupOpen(false)}
+        object={response}
+      />
       <Footer />
     </div>
   );
